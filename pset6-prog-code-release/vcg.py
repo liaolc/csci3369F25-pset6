@@ -43,40 +43,40 @@ class VCG:
 
         (allocation, just_bids) = list(zip(*allocated_bids))
 
+        num_alloc = len(allocation)
 
-        # TODO: You just have to implement this function
-        def total_payment(k):
-            """
-            Total payment for a bidder in slot k.
-            """
-            c = slot_clicks
-            n = len(allocation)
+        def next_price(idx):
+            """Per-click price driven by the next highest bid or reserve."""
+            if idx < num_alloc - 1:
+                return max(reserve, just_bids[idx + 1])
+            # Last allocated slot looks at the highest losing bid (if any).
+            if len(valid_bids) > num_alloc:
+                return max(reserve, valid_bids[num_alloc][1])
+            return float(reserve)
 
-            # TODO: Compute the payment and return it.
-            if k >= n:
-                return 0 # no cost for losing!a
-            pos_effect_k = c[k] 
-            # print(bids)
-            if k+1 < n:
-                pos_effect_next_k = c[k+1] 
-                next_bid = just_bids[k+1]
-            else: 
-                pos_effect_next_k = 0
-                
-                if k+1 < len(valid_bids):
-                    next_bid = valid_bids[k+1][1]
+        # Pre-compute payments recursively following the textbook formula.
+        def total_payment(idx):
+            if idx == num_alloc - 1:
+                return slot_clicks[idx] * next_price(idx)
+
+            payment_next = total_payment(idx + 1)
+            price_component = next_price(idx)
+            delta_clicks = slot_clicks[idx] - slot_clicks[idx + 1]
+            return delta_clicks * price_component + payment_next
+
+        totals = [total_payment(k) for k in range(num_alloc)]
+
+        def norm(totals_list):
+            """Normalize total payments by clicks, guarding against zero clicks."""
+            result = []
+            for total, clicks in zip(totals_list, slot_clicks):
+                if clicks == 0:
+                    result.append(0.0)
                 else:
-                    next_bid = reserve
-            return (pos_effect_k - pos_effect_next_k) * max(reserve,next_bid) + total_payment(k+1)
-            # else: return max(reserve,bids[k+1][1]) * c[-1]
-                
+                    result.append(total / float(clicks))
+            return result
 
-        def norm(totals):
-            """Normalize total payments by the clicks in each slot"""
-            return [x_y[0]/x_y[1] for x_y in zip(totals, slot_clicks)]
-
-        per_click_payments = norm(
-            [total_payment(k) for k in range(len(allocation))])
+        per_click_payments = norm(totals)
 
         return (list(allocation), per_click_payments)
 

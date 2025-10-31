@@ -7,15 +7,15 @@ explain your findings.
 Make use of the --perms, --seed, and --iters commands, e.g. --perms 1 --seed 2
 --iters 200 would be a good starting point.
 
-A: 
+3a: 
 Over 500 iterations, seed=2, default settings
 Mean utility for each of five truthful agents: $334.652$, std: $12.625$
 Mean Utility for each of five BB Agents:  571.12, std: 28.136
 
-Balanced Bidding agents are more successful than truthful agents, which aligns with the textbook's description and proof that Balanced Bidding is an Envy Free Nash Equilibrium, while Truthful bidding is not. A quick way to see this is that in truthful bidding, an agent could deviate to bid lower than their true value while still retaining the same position. In Balanced Bidding, agents already bid the lowest possible such that no other agent can deviate (retaliate). This is also shown empirically by BB Agents having much lower total costs than Truthful agents.
+Balanced bidding agents are more successful than truthful agents, which aligns with the textbook’s description and proof that balanced bidding is an envy-free Nash equilibrium while truthful bidding is not. Put differently, a truthful agent can profitably shave its bid and keep the same slot, but a balanced bidder already sits at a point where any deviation invites retaliation. The empirical gap in total costs mirrors that logic: balanced bidders pay far less for the same clicks.
 
 
-(b) [10 Points] In addition, what is the average utility of one balanced-bidding agent against
+3(b) [10 Points] In addition, what is the average utility of one balanced-bidding agent against
 4 truthful agents, and one truthful agent against 4 balanced-bidding agents? For the
 new experiment, make use of the --seed, and --iters commands, but you will now
 want to run multiple permutations. Note that you can add multiple agents types using:
@@ -31,9 +31,9 @@ Over 500 iterations, seed=2, default settings, 1 Truthful + 4 Balanced Bidder
 Mean for truthful bidder:  651.77
 Mean for Balanced bidders:  566.2625, std: 17.622
 
-This shows being a balanced bidder is better when there are many truthful bidders, but being a truthful bidder is better when there are many balanced bidders. This seems to contradict Balanced Bidding being an Envy Free Nash Equilibrium, which likely means our implementation of balanced bidding doesn't match the theoretical EFNE.
+These runs suggest a balanced bidder dominates truthful play in a population of naive agents, while a truthful bidder can still do well when everyone else is balanced. The tension with the theoretical envy-free equilibrium hints that our implementation may deviate from the textbook construction.
 
-2 (b)
+4 (b)
 What is the auctioneer’s revenue under GSP with no reserve price when
 all the agents use the balanced-bidding strategy? What happens as the reserve price
 increases? What is the revenue-optimal reserve price?
@@ -81,4 +81,21 @@ RP 105: Average daily revenue (stddev): $4828.93 ($1878.53)
 RP 110: Average daily revenue (stddev): $4600.44 ($2070.89)
 RP 120: Average daily revenue (stddev): $4393.43 ($2076.87)
 RP 150: Average daily revenue (stddev): $2927.09 ($2449.50)
+
+---
+
+#### 4(d) Switching midstream  
+`python auction.py --loglevel WARNING --perms 1 --iters 200 --seed 199 --mech switch Ischesbb,5`
+
+Keeping all agents balanced, average daily revenue drops from \$4468.76 under pure GSP (reserve 0) to \$4052.16 when the platform switches to VCG at round 24. Once VCG kicks in, bids fall to truthful levels and the higher slots stop paying second-price premiums, so the short-run revenue dip is immediate even though allocation efficiency rises
+
+A simple reserve can substantially increase GSP revenue, but only up to the point where it begins to exclude too many bidders from the market; beyond that the revenue falls as slots go unsold. VCG tolerates more aggressive reserves because truthful bidding prevents the strategic underbidding that GSP invites, though the platform may collect slightly lower payments when the reserve is low. Balanced bidding emerges as a robust best‑response heuristic: it raises individual agent utility while tightening competition around the marginal slot and thus boosting GSP revenue. Finally, mechanism changes matter in the short run since switching from GSP to VCG without retuning reserves can reduce platform income immediately even if overall welfare improves.  
+
+
+### 5. Budget Constraints
+#### (a) Competition agent (`ischesbudget.py`)
+Our `Ischesbudget` client starts from the balanced bidding playbook and adds pacing. It reads historical clicks and bid ranges to compute the balanced best response for each slot, compares the cumulative spend stored in `history.agents_spent` with the remaining budget, and divides by the periods left in the 48-step day to derive an allowable spend per round. Whenever the projected cost of a slot exceeds that allowance, the utility estimate is dampened so the agent drifts toward cheaper slots. The final bid scales the balanced bid toward the reserve, ensuring that expected spend tracks the pacing target without ever exceeding the per-click value. This keeps the agent aggressive early on and automatically throttles bids once the budget becomes binding, avoiding the catastrophic zero bids that strike a pure balanced bidder after it exhausts the budget mid-day.
+
+
+
 
