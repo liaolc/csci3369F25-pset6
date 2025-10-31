@@ -14,14 +14,14 @@ Balanced bidding agents are more successful than truthful agents, which aligns w
 Command template: `python auction.py --perms 10 --iters 200 Truthful,4 abxybb,1`
 
 Over 500 iterations, seed = 2, default settings, 4 truthful + 1 balanced bidder  
-Mean for truthful bidders: \$370.690, std: \$20.700  
-Mean for balanced bidder: \$465.08  
+Mean for truthful bidders: \$382.690, std: \$20.700  
+Mean for balanced bidder: \$552.31
 
 Over 500 iterations, seed = 2, default settings, 1 truthful + 4 balanced bidders  
-Mean for truthful bidder: \$651.77  
-Mean for balanced bidders: \$566.2625, std: \$17.622  
+Mean for truthful bidder: \$683.47 (daily)
+Mean for balanced bidders: \$660.095, std: \$20.645
 
-These runs suggest a balanced bidder dominates truthful play in a population of naive agents, while a truthful bidder can still do well when everyone else is balanced. The tension with the theoretical envy-free equilibrium hints that our implementation may deviate from the textbook construction.
+These runs suggest a balanced bidder dominates truthful play in a population of naive agents, while a truthful bidder can still do well when everyone else is balanced. A single truthful agent is a unilateral deviation from Balanced Bidding, which is proven to be an Envy Free Nash Equilibrium, so it should suffer in performance. We find that the truthful agent surpasesses the balanced bidder in average utility, which suggests our implementation may deviate from theory. 
 
 ## 4. Experiments with Revenue: GSP vs. VCG
 
