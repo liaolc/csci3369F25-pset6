@@ -5,7 +5,7 @@ import sys
 from gsp import GSP
 from util import argmax_index
 
-class BBAgent:
+class Ischesbb:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
         self.id = id
@@ -50,8 +50,34 @@ class BBAgent:
         returns a list of utilities per slot.
         """
         # TODO: Fill this in
-        utilities = []   # Change this
-
+        last_round = history.round(t-1)
+        utilities = [0] * len(last_round.slot_payments)  
+        if t > 0:
+            if last_round.bids[0][1] < reserve:
+                utilities = [0.0001] # util.py has a bug -- if no max, throws exception
+                return utilities
+            try:
+                my_slot = last_round.occupants.index(self.id)
+            except ValueError: 
+                my_slot = -1
+            if my_slot >= 0:
+                my_id, my_bid = last_round.bids[my_slot]
+            else:
+                my_bid = 0
+            for i in range(len(last_round.slot_payments)):
+            
+                # BIDS IS SORTED ALREADY!!!
+            
+                    # occupant = last_round.occupants[i]-1 # assume agent's name from 1,..,N
+                agentid, next_highest_bid = last_round.bids[i] # = original first price
+                if my_bid >= next_highest_bid: # I won, pay original
+                    next_highest_bid = last_round.per_click_payments[i]
+                
+                #print(f"my value: {self.value}, clicks for slot {i}: {last_round.clicks[i]}, winning bid: {next_highest_bid}")
+                utilities[i] =  last_round.clicks[i]*(self.value - max(reserve, next_highest_bid))
+                #print(f"utility computed: {utilities[i]}")
+        # else: 
+        #     utilities = [reserve] * len(last_round.slot_payments)  
         
         return utilities
 
@@ -80,9 +106,16 @@ class BBAgent:
 
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
-
+       
         # TODO: Fill this in.
-        bid = 0  # change this
+        bid = 0
+        if slot == 0 or min_bid > self.value:
+            bid = self.value 
+        else: # b_i^t* = v_i - (pos_j*/pos_j*-1)(v_i - price_j*)
+            pos_estimate_j = prev_round.clicks[slot] / prev_round.clicks[0] 
+            # pos_j*-1
+            pos_estimate_before_j =  prev_round.clicks[slot-1] / prev_round.clicks[0]
+            bid = self.value - ((pos_estimate_j/pos_estimate_before_j) * (self.value - min_bid))
         
         return bid
 

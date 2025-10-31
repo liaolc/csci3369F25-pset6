@@ -43,6 +43,7 @@ class VCG:
 
         (allocation, just_bids) = list(zip(*allocated_bids))
 
+
         # TODO: You just have to implement this function
         def total_payment(k):
             """
@@ -52,6 +53,23 @@ class VCG:
             n = len(allocation)
 
             # TODO: Compute the payment and return it.
+            if k >= n:
+                return 0 # no cost for losing!a
+            pos_effect_k = c[k] 
+            # print(bids)
+            if k+1 < n:
+                pos_effect_next_k = c[k+1] 
+                next_bid = just_bids[k+1]
+            else: 
+                pos_effect_next_k = 0
+                
+                if k+1 < len(valid_bids):
+                    next_bid = valid_bids[k+1][1]
+                else:
+                    next_bid = reserve
+            return (pos_effect_k - pos_effect_next_k) * max(reserve,next_bid) + total_payment(k+1)
+            # else: return max(reserve,bids[k+1][1]) * c[-1]
+                
 
         def norm(totals):
             """Normalize total payments by the clicks in each slot"""

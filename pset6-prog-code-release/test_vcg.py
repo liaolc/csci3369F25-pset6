@@ -28,6 +28,7 @@ def test_mechanism():
     reserve = 0
     (alloc, payments) = VCG.compute(slot_clicks, reserve, bids)
     assert alloc == [5,3,4,2]
+    verb_assert(payments, norm([54, 36, 22, 10]))
     assert payments == norm([54, 36, 22, 10])
 
     reserve = 11
@@ -59,6 +60,11 @@ def test_mechanism():
     assert payments == []
 
     print('\n\t Finished test_mechanism')
+
+def verb_assert(x,y):
+    if not x == y:
+        print(("Expected ", y, "got ", x))
+    assert x == y
 
 
 def test_bid_ranges():

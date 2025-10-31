@@ -21,7 +21,7 @@ from vcg import VCG
 from history import History
 from stats import Stats
 
-#from bbagent import BBAgent
+#from ischesbb import BBAgent
 #from truthfulagent import TruthfulAgent
 
 from util import argmax_index, shuffled, mean, stddev

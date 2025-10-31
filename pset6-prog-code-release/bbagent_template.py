@@ -5,7 +5,7 @@ import sys
 from gsp import GSP
 from util import argmax_index
 
-class BBAgent:
+class BBAgent_template:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
         self.id = id
